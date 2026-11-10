@@ -16,7 +16,6 @@
   {{ if not $skip }}{{ $filtered = $filtered | append . }}{{ end }}
 {{ end }}
 {{ $pages := .Paginate $filtered }}
-<h1>{{ .Title }}</h1>
 {{ partial "ad-banner.html" . }}
 {{ range $pages.Pages }}
 <article class="post">
