@@ -6,7 +6,7 @@ header { background: #1a2744; color: #fff; padding: 1rem 1.5rem;
          display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
 .site-title { color: #fff; text-decoration: none; font-size: 1.3rem; font-weight: 700;
               display: inline-flex; align-items: center; }
-.site-logo { height: 40px; width: auto; display: block; }
+.site-logo { height: 28px; width: auto; display: block; }
 nav a { color: #cfd8f0; text-decoration: none; margin-left: 1rem; font-size: .95rem; }
 nav a:hover { color: #fff; }
 #lang-switcher {
