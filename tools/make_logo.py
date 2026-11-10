@@ -21,7 +21,7 @@ C_RED = (217, 18, 40)
 
 # Wordmark proportions (fractions of canvas height)
 BADGE_RATIO = 0.93
-TEXT_RATIO = 0.95
+TEXT_RATIO = 0.72
 
 
 def make_badge(size=400, radius_ratio=0.24):
