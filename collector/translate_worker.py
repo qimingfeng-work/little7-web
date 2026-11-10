@@ -336,7 +336,7 @@ def main():
         for f in glob.glob(os.path.join(CONTENT, "**", "*.md"), recursive=True):
             m = re.search(r"-(\d+)\.(zh-tw|zh|ja|fr|ar)\.md$", f)
             if m:
-                existing.add((int(m.group(1)), m.group(2)))
+                existing.add((int(m.group(1)), m.group(2).lower()))
 
         # Fetch pending rows, limited to BATCH per pass
         rows = c.execute(
@@ -350,7 +350,7 @@ def main():
         for aid, body, src_url, src_name, published, title, image_url in rows:
             missing = False
             for lg in LANGS:
-                if (aid, lg) not in existing:
+                if (aid, lg.lower()) not in existing:
                     missing = True
                     break
             if missing:
@@ -381,7 +381,7 @@ def main():
         # Process successful batch results
         for aid, rec in result.items():
             for lg, (tt, bb) in rec.items():
-                if (aid, lg) in existing:
+                if (aid, lg.lower()) in existing:
                     continue
                 seg_body = segment(bb)
                 if "\n\n" in seg_body and "<!--more-->" not in seg_body:
