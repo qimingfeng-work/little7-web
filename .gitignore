@@ -3,6 +3,7 @@
 *.env
 collector/.env
 collector/.env.bak
+collector/.env.bak*
 
 # ---- Python ---------------------------------------------------------------
 collector/__pycache__/
