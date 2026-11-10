@@ -1,0 +1,103 @@
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+
+    return 301 https://www.little7.net$request_uri;
+    root /var/www/hotnews;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # GoAccess stats — outside the Hugo build dir so --cleanDestinationDir can't wipe it
+    location = /goaccess.html {
+        alias /var/www/goaccess/goaccess.html;
+    }
+
+
+    # zh → zh-TW redirect (Traditional Chinese moved to its own language code)
+    location ~ ^/zh(/.*)?$ {
+        return 301 /zh-tw$1$is_args$args;
+    }
+    location = /zh {
+        return 301 /zh-tw/;
+    }
+    # Demo game site — independent directory, isolated from Hugo builds
+    location /game/ {
+        alias /var/www/game/;
+        index index.html;
+        try_files $uri $uri/ =404;
+    }
+
+    location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
+        expires 7d;
+        add_header Cache-Control "public";
+    }
+}
+server {
+    server_name www.little7.net little7.net; # managed by Certbot
+
+    root /var/www/hotnews;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # GoAccess stats — outside the Hugo build dir so --cleanDestinationDir can't wipe it
+    location = /goaccess.html {
+        alias /var/www/goaccess/goaccess.html;
+    }
+
+
+    # zh → zh-TW redirect (Traditional Chinese moved to its own language code)
+    location ~ ^/zh(/.*)?$ {
+        return 301 /zh-tw$1$is_args$args;
+    }
+    location = /zh {
+        return 301 /zh-tw/;
+    }
+    # Demo game site — independent directory, isolated from Hugo builds
+    location /game/ {
+        alias /var/www/game/;
+        index index.html;
+        try_files $uri $uri/ =404;
+    }
+
+    location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
+        expires 7d;
+        add_header Cache-Control "public";
+    }
+
+
+    listen 443 ssl; # managed by Certbot
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/www.little7.net/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/www.little7.net/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+
+
+}server {
+    if ($host = little7.net) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    if ($host = www.little7.net) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80 ;
+    listen [::]:80 ;
+    server_name www.little7.net little7.net;
+    return 404; # managed by Certbot
+
+
+
+
+}

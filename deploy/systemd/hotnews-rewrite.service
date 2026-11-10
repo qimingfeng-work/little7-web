@@ -1,0 +1,14 @@
+[Unit]
+Description=HotNews Daily rewrite worker (status=0 -> status=1 + publish + build)
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/hotnews
+ExecStart=/home/ubuntu/hotnews/venv/bin/python /home/ubuntu/hotnews/collector/rewrite_worker.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

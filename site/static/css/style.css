@@ -1,0 +1,133 @@
+/* HotNews Daily - minimal styles */
+* { box-sizing: border-box; }
+body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+       margin: 0; color: #1a1a1a; line-height: 1.6; }
+header { background: #1a2744; color: #fff; padding: 1rem 1.5rem;
+         display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+.site-title { color: #fff; text-decoration: none; font-size: 1.3rem; font-weight: 700;
+              display: inline-flex; align-items: center; }
+.site-logo { height: 40px; width: auto; display: block; }
+nav a { color: #cfd8f0; text-decoration: none; margin-left: 1rem; font-size: .95rem; }
+nav a:hover { color: #fff; }
+#lang-switcher {
+  font-size: 0.85em;
+  padding: 2px 6px;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  background: #fff;
+  color: #222;
+}
+main { max-width: 760px; margin: 1.5rem auto; padding: 0 1.5rem; }
+.post { border-bottom: 1px solid #e3e3e3; padding-bottom: 1rem; margin-bottom: 1.2rem; }
+.post h2 { margin: 0 0 .3rem; }
+.post h2 a { color: #12325f; text-decoration: none; }
+.post h2 a:hover { text-decoration: underline; }
+.meta { color: #666; font-size: .85rem; margin-bottom: .5rem; }
+.pagination { display: flex; justify-content: space-between; align-items: center;
+              border-top: 1px solid #e3e3e3; margin-top: 1.2rem; padding-top: .8rem; }
+.pagination a { color: #12325f; text-decoration: none; font-weight: 600; }
+.pagination a:hover { text-decoration: underline; }
+.page-info { color: #666; font-size: .85rem; }
+article.post h1 { margin-bottom: .3rem; }
+footer { border-top: 1px solid #e3e3e3; margin-top: 2rem; padding: 1rem 1.5rem;
+         color: #888; font-size: .85rem; text-align: center; }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  border-top: 1px solid #e3e3e3;
+  margin-top: 1.2rem;
+  padding-top: 0.8rem;
+}
+.pagination a {
+  color: #12325f;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid #e3e3e3;
+  border-radius: 4px;
+}
+.pagination a:hover {
+  background: #f0f4f8;
+  text-decoration: none;
+}
+.pagination .current {
+  color: #fff;
+  background: #12325f;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+.pagination .ellipsis {
+  color: #888;
+  padding: 0.3rem 0.4rem;
+}
+
+/* Post images — fixed boxes reserve space, preventing layout shift (CLS) */
+.post-thumb {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  background: #eef1f5;
+}
+.post-image {
+  width: 100%;
+  max-width: 800px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+  margin: 15px auto;
+  border-radius: 4px;
+  background: #eef1f5;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  font-size: .85rem;
+  color: #666;
+  margin-bottom: .6rem;
+}
+.breadcrumb a { color: #12325f; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb .sep { margin: 0 .35rem; color: #999; }
+.breadcrumb .current { color: #444; }
+
+/* Related articles */
+.related {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e3e3e3;
+}
+.related h2 { font-size: 1.1rem; margin: 0 0 .6rem; }
+.related ul { margin: 0; padding-left: 1.2rem; }
+.related li { margin-bottom: .35rem; }
+.related li a { color: #12325f; text-decoration: none; }
+.related li a:hover { text-decoration: underline; }
+
+/* Ad banner */
+.ad-banner {
+  margin: 10px auto;
+  text-align: center;
+  max-width: 468px;
+  width: 100%;
+  clear: both;
+}
+.ad-banner iframe {
+  max-width: 100%;
+  border: none;
+  display: block;
+  margin: 0 auto;
+}
+/* Ad banner: top variant */
+.ad-banner-top {
+  margin-top: 10px;
+}
+/* Ad banner: bottom variant */
+.ad-banner-bottom {
+  margin-bottom: 10px;
+}

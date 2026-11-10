@@ -1,0 +1,31 @@
+{{- $pctx := . -}}
+{{- if .IsHome -}}{{ $pctx = .Site }}{{ end -}}
+{{- $pages := slice -}}
+{{- if or $.IsHome $.IsSection -}}{{ $pages = $pctx.RegularPages }}{{ else }}{{ $pages = $pctx.Pages }}{{ end -}}
+{{- $pages = $pages | first 50 -}}
+{{- printf "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>" | safeHTML }}
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{{ if eq .Title .Site.Title }}{{ .Site.Title }}{{ else }}{{ with .Title }}{{ . }} | {{ end }}{{ .Site.Title }}{{ end }}</title>
+    <link>{{ .Permalink }}</link>
+    <description>{{ .Site.Params.description }}</description>
+    <generator>Hugo</generator>
+    <language>{{ .Site.Language.Lang }}</language>
+    {{ with index $pages 0 }}<lastBuildDate>{{ .Date | time.Format "Mon, 02 Jan 2006 15:04:05 -0700" }}</lastBuildDate>{{ end }}
+    <atom:link href="{{ .Permalink }}" rel="self" type="application/rss+xml" />
+    <image>
+      <url>{{ .Site.BaseURL }}images/logo.png</url>
+      <title>{{ .Site.Title }}</title>
+      <link>{{ .Permalink }}</link>
+    </image>
+    {{ range $pages }}
+    <item>
+      <title>{{ .Title }}</title>
+      <link>{{ .Permalink }}</link>
+      <pubDate>{{ .Date | time.Format "Mon, 02 Jan 2006 15:04:05 -0700" }}</pubDate>
+      <guid>{{ .Permalink }}</guid>
+      <description>{{ .Summary | plainify | replaceRE "\n" " " | replaceRE "  +" " " | strings.TrimSpace }}</description>
+    </item>
+    {{ end }}
+  </channel>
+</rss>

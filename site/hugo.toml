@@ -1,0 +1,40 @@
+baseURL = 'https://www.little7.net/'
+title = 'HotNews Daily'
+enableRobotsTXT = false
+pygmentsCodeFences = true
+
+defaultContentLanguage = 'en'
+
+[pagination]
+  pagerSize = 100
+
+[languages]
+  [languages.en]
+    title = 'HotNews Daily'
+    locale = 'en-us'
+    weight = 1
+  [languages.zh-TW]
+    title = 'HotNews Daily 繁體中文'
+    locale = 'zh-TW'
+    weight = 2
+  [languages.ja]
+    title = 'HotNews Daily 日本語'
+    locale = 'ja-JP'
+    weight = 3
+  [languages.fr]
+    title = 'HotNews Daily Français'
+    locale = 'fr-FR'
+    weight = 4
+  [languages.ar]
+    title = 'HotNews Daily العربية'
+    locale = 'ar-SA'
+    weight = 5
+
+[params]
+  description = 'Aggregated world news, rewritten in plain English.'
+  footer = 'HotNews Daily - aggregated summaries with links to original sources.'
+
+[outputs]
+  home = ['HTML', 'RSS']
+  section = ['HTML', 'RSS']
+  page = ['HTML']

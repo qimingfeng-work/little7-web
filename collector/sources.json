@@ -1,0 +1,14 @@
+{
+  "sources": [
+    {"name": "Google News US", "url": "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en", "lang": "en", "split_title": true},
+    {"name": "Google News UK", "url": "https://news.google.com/rss?hl=en-GB&gl=GB&ceid=GB:en", "lang": "en", "split_title": true},
+    {"name": "Google News TW", "url": "https://news.google.com/rss?hl=zh-TW&gl=TW&ceid=TW:zh-Hant", "lang": "zh-TW", "split_title": true},
+    {"name": "BBC News", "url": "https://feeds.bbci.co.uk/news/rss.xml", "lang": "en"},
+    {"name": "BBC World", "url": "https://feeds.bbci.co.uk/news/world/rss.xml", "lang": "en"},
+    {"name": "The Guardian World", "url": "https://www.theguardian.com/world/rss", "lang": "en"},
+    {"name": "The Verge", "url": "https://www.theverge.com/rss/index.xml", "lang": "en"},
+    {"name": "TechCrunch", "url": "https://techcrunch.com/feed/", "lang": "en"},
+    {"name": "Ars Technica", "url": "https://feeds.arstechnica.com/arstechnica/index", "lang": "en"},
+    {"name": "Hacker News", "url": "https://hnrss.org/frontpage", "lang": "en"}
+  ]
+}

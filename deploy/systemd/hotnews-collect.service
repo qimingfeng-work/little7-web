@@ -1,0 +1,15 @@
+[Unit]
+Description=HotNews background collection worker
+After=network.target
+
+[Service]
+EnvironmentFile=/home/ubuntu/hotnews/collector/.env
+User=ubuntu
+ExecStart=/home/ubuntu/hotnews/venv/bin/python /home/ubuntu/hotnews/collector/collect_worker.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

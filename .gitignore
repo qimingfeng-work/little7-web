@@ -1,0 +1,26 @@
+# ---- Secrets: never commit ------------------------------------------------
+.env
+*.env
+collector/.env
+collector/.env.bak
+
+# ---- Python ---------------------------------------------------------------
+collector/__pycache__/
+*.py[cod]
+venv/
+.pytest_cache/
+
+# ---- Runtime data & logs --------------------------------------------------
+*.log
+hotnews.db
+hotnews.db-wal
+hotnews.db-shm
+
+# ---- Generated site content ------------------------------------------------
+# 26k+ markdown files are produced from the DB by the pipeline; the database
+# is the source of truth, so content is not versioned here.
+site/content/
+site/.hugo_build.lock
+
+# ---- Build output ----------------------------------------------------------
+build-output/

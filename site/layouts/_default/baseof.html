@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="{{ if eq .Language.Lang "zh-tw" }}zh-TW{{ else }}{{ .Language.Lang }}{{ end }}"{{ if eq .Language.Lang "ar" }} dir="rtl"{{ end }}>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ block "title" . }}{{ .Site.Title }}{{ end }}</title>
+  {{ $desc := .Description }}{{ if not $desc }}{{ if .IsPage }}{{ $desc = .Summary | plainify | replaceRE "\n" " " | replaceRE "  +" " " | strings.TrimSpace | truncate 155 }}{{ else }}{{ $desc = .Site.Params.description }}{{ end }}{{ end }}
+  {{ with $desc }}<meta name="description" content="{{ . }}">{{ end }}
+  <link rel="canonical" href="{{ .Permalink }}">
+  {{ $hl := dict "en" "en" "zh-tw" "zh-TW" "ja" "ja" "fr" "fr" "ar" "ar" }}
+  {{ range .Translations }}
+  <link rel="alternate" hreflang="{{ index $hl .Language.Lang | default .Language.Lang }}" href="{{ .Permalink }}">
+  {{ end }}
+  <link rel="alternate" hreflang="{{ index $hl .Language.Lang | default .Language.Lang }}" href="{{ .Permalink }}">
+  <link rel="alternate" hreflang="x-default" href="{{ .Site.BaseURL }}">
+  {{ with .OutputFormats.Get "rss" }}<link rel="alternate" type="application/rss+xml" href="{{ .Permalink }}" title="{{ $.Site.Title }}">{{ end }}
+  <link rel="stylesheet" href="/css/style.css?v=6">
+  <link rel="icon" href="/images/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="/images/favicon-64.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  {{/* SEO: Open Graph */}}
+  {{ $og_type := "website" }}{{ if .IsPage }}{{ $og_type = "article" }}{{ end }}
+  {{ $og_locales := dict "en" "en_US" "zh-tw" "zh_TW" "ja" "ja_JP" "fr" "fr_FR" "ar" "ar_SA" }}
+  <meta property="og:site_name" content="{{ .Site.Title }}">
+  <meta property="og:title" content="{{ .Title }}">
+  <meta property="og:description" content="{{ $desc }}">
+  <meta property="og:url" content="{{ .Permalink }}">
+  <meta property="og:type" content="{{ $og_type }}">
+  <meta property="og:locale" content="{{ index $og_locales .Language.Lang | default "en_US" }}">
+  {{ with .Params.image_url }}<meta property="og:image" content="{{ . }}">{{ end }}
+  {{ if .IsPage }}
+  <meta property="article:published_time" content="{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}">
+  <meta property="article:modified_time" content="{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}">
+  {{ end }}
+  {{/* SEO: Twitter Card */}}
+  <meta name="twitter:card" content="{{ if .Params.image_url }}summary_large_image{{ else }}summary{{ end }}">
+  <meta name="twitter:title" content="{{ .Title }}">
+  <meta name="twitter:description" content="{{ $desc }}">
+  {{ with .Params.image_url }}<meta name="twitter:image" content="{{ . }}">{{ end }}
+  {{/* SEO: JSON-LD NewsArticle */}}
+  {{ if and .IsPage (eq .Section "posts") }}
+  {{ $schema := dict "@context" "https://schema.org" "@type" "NewsArticle" "headline" .Title "description" $desc "datePublished" (.Date.Format "2006-01-02T15:04:05Z07:00") "dateModified" (.Lastmod.Format "2006-01-02T15:04:05Z07:00") "mainEntityOfPage" (dict "@type" "WebPage" "@id" .Permalink) "url" .Permalink "author" (dict "@type" "Organization" "name" .Site.Title) "publisher" (dict "@type" "Organization" "name" .Site.Title "logo" (dict "@type" "ImageObject" "url" (printf "%simages/logo.png" .Site.BaseURL))) "inLanguage" .Language.Lang }}
+  {{ with .Params.image_url }}{{ $schema = merge $schema (dict "image" (slice .)) }}{{ end }}
+  <script type="application/ld+json">{{ $schema | jsonify | safeJS }}</script>
+  {{ end }}
+  {{/* SEO: JSON-LD BreadcrumbList */}}
+  {{ if and .IsPage (eq .Section "posts") }}
+  {{ $home_name := "Home" }}{{ if eq .Language.Lang "zh-tw" }}{{ $home_name = "首頁" }}{{ else if eq .Language.Lang "fr" }}{{ $home_name = "Accueil" }}{{ else if eq .Language.Lang "ja" }}{{ $home_name = "ホーム" }}{{ else if eq .Language.Lang "ar" }}{{ $home_name = "الرئيسية" }}{{ end }}
+  {{ $bread := dict "@context" "https://schema.org" "@type" "BreadcrumbList" "itemListElement" (slice (dict "@type" "ListItem" "position" 1 "name" $home_name "item" .Site.BaseURL) (dict "@type" "ListItem" "position" 2 "name" .Title "item" .Permalink)) }}
+  <script type="application/ld+json">{{ $bread | jsonify | safeJS }}</script>
+  {{ end }}
+  {{ block "head" . }}{{ end }}
+  {{ if and (eq .Kind "page") (eq .Section "posts") }}
+  <!-- Adsterra Popunder (news article pages only) -->
+  <script data-cfasync="false" src="https://abscloud.org/1/7661a32262102aa8b50a8c26c60ccd74"></script>
+  {{ end }}
+</head>
+<body>
+  <header>
+    <a class="site-title" href="{{ if eq .Language.Lang "en" }}/{{ else }}/{{ .Language.Lang | lower }}/{{ end }}"><img src="/images/logo-light.png" alt="{{ .Site.Title }}" class="site-logo" width="190" height="40"></a>
+    <nav>
+      <a href="{{ if eq .Language.Lang "en" }}/{{ else }}/{{ .Language.Lang | lower }}/{{ end }}">{{ if eq .Language.Lang "en" }}Home{{ else if eq .Language.Lang "zh-tw" }}首頁{{ else if eq .Language.Lang "ja" }}ホーム{{ else if eq .Language.Lang "fr" }}Accueil{{ else if eq .Language.Lang "ar" }}الرئيسية{{ end }}</a>
+      <a href="{{ if eq .Language.Lang "en" }}/about/{{ else }}/{{ .Language.Lang | lower }}/about/{{ end }}">{{ if eq .Language.Lang "en" }}About{{ else if eq .Language.Lang "zh-tw" }}關於{{ else if eq .Language.Lang "ja" }}概要{{ else if eq .Language.Lang "fr" }}À propos{{ else if eq .Language.Lang "ar" }}关于{{ end }}</a>
+      <a href="{{ if eq .Language.Lang "en" }}/privacy/{{ else }}/{{ .Language.Lang | lower }}/privacy/{{ end }}">{{ if eq .Language.Lang "en" }}Privacy{{ else if eq .Language.Lang "zh-tw" }}隱私{{ else if eq .Language.Lang "ja" }}プライバシー{{ else if eq .Language.Lang "fr" }}Confidentialité{{ else if eq .Language.Lang "ar" }}隐私{{ end }}</a>
+      <a href="{{ if eq .Language.Lang "en" }}/contact/{{ else }}/{{ .Language.Lang | lower }}/contact/{{ end }}">{{ if eq .Language.Lang "en" }}Contact{{ else if eq .Language.Lang "zh-tw" }}聯繫{{ else if eq .Language.Lang "ja" }}お問い合わせ{{ else if eq .Language.Lang "fr" }}Contact{{ else if eq .Language.Lang "ar" }}联系{{ end }}</a>
+      {{ $langs := slice (slice "en" "English") (slice "zh-tw" "繁體中文") (slice "ja" "日本語") (slice "fr" "Français") (slice "ar" "العربية") }}
+      {{ $currentLang := .Language.Lang }}
+      <select id="lang-switcher" title="Switch language" onchange="window.location.href=this.value" aria-label="Switch language">
+        {{ range $langs }}
+          {{ $code := index . 0 }}
+          {{ $name := index . 1 }}
+          {{ $target := "" }}
+          {{ range $.Translations }}
+            {{ if eq .Language.Lang $code }}{{ $target = .RelPermalink }}{{ end }}
+          {{ end }}
+          {{ if not $target }}
+            {{ if eq $code $currentLang }}
+              {{ $target = $.RelPermalink }}
+            {{ else if eq $code "en" }}
+              {{ $target = "/" }}
+            {{ else }}
+              {{ $target = printf "/%s/" ($code | lower) }}
+            {{ end }}
+          {{ end }}
+          <option value="{{ $target }}" {{ if eq $target $.RelPermalink }}selected{{ end }}>{{ $name }}</option>
+        {{ end }}
+      </select>
+    </nav>
+  </header>
+  <main>
+  {{ block "main" . }}{{ end }}
+  </main>
+  <footer><p>{{ .Site.Params.footer }}</p></footer>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{{ define "title" }}{{ .Title }} - {{ .Site.Title }}{{ end }}
+{{ define "main" }}
+<article class="post">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{{ if eq .Language.Lang "en" }}/{{ else }}/{{ .Language.Lang | lower }}/{{ end }}">{{ if eq .Language.Lang "zh-tw" }}首頁{{ else if eq .Language.Lang "fr" }}Accueil{{ else if eq .Language.Lang "ja" }}ホーム{{ else if eq .Language.Lang "ar" }}الرئيسية{{ else }}Home{{ end }}</a>
+    <span class="sep">›</span>
+    <span class="current">{{ .Title }}</span>
+  </nav>
+  <h1>{{ .Title }}</h1>
+  <div class="meta">
+    {{ .Date.Format "2006-01-02 15:04" }}
+    {{ with .Params.source_name }} · source: {{ . }}{{ end }}
+    {{ with .Params.lang }} · lang: {{ . }}{{ end }}
+  </div>
+  {{ partial "ad-banner.html" . }}
+  {{ with .Params.image_url }}<img src="{{ . }}" alt="{{ $.Title }}" class="post-image" loading="lazy" decoding="async">{{ end }}
+  {{ .Content }}
+  {{ partial "ad-banner.html" . }}
+  {{ $related := where site.RegularPages.ByDate.Reverse "RelPermalink" "ne" .RelPermalink | first 8 }}
+  {{ if $related }}
+  <section class="related">
+    <h2>{{ if eq .Language.Lang "zh-tw" }}相關新聞{{ else if eq .Language.Lang "fr" }}Articles similaires{{ else if eq .Language.Lang "ja" }}関連記事{{ else if eq .Language.Lang "ar" }}أخبار ذات صلة{{ else }}Related News{{ end }}</h2>
+    <ul>
+      {{ range $related }}
+      <li><a href="{{ .Permalink }}">{{ .Title }}</a><span class="meta"> · {{ .Date.Format "2006-01-02" }}</span></li>
+      {{ end }}
+    </ul>
+  </section>
+  {{ end }}
+</article>
+{{ end }}

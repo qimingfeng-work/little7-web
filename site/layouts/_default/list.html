@@ -1,0 +1,97 @@
+{{ define "title" }}{{ .Title }} - {{ .Site.Title }}{{ end }}
+{{ define "head" }}
+{{ with .Paginator }}
+{{ if .HasPrev }}<link rel="prev" href="{{ .Prev.URL | absURL }}">{{ end }}
+{{ if .HasNext }}<link rel="next" href="{{ .Next.URL | absURL }}">{{ end }}
+{{ end }}
+{{ end }}
+{{ define "main" }}
+{{ $all_pages := site.RegularPages.ByDate.Reverse }}
+{{ $filtered := slice }}
+{{ range $all_pages }}
+  {{ $skip := false }}
+  {{ $rel := .RelPermalink }}
+  {{ $title := .Title }}
+  {{ $skip := or (in $rel "/about/") (in $rel "/contact/") (in $rel "/privacy/") (eq $title "About") (eq $title "Contact") (eq $title "Privacy") }}
+  {{ if not $skip }}{{ $filtered = $filtered | append . }}{{ end }}
+{{ end }}
+{{ $pages := .Paginate $filtered }}
+<h1>{{ .Title }}</h1>
+{{ partial "ad-banner.html" . }}
+{{ range $pages.Pages }}
+<article class="post">
+  {{ $title := .Title }}
+  {{ with .Params.image_url }}<img src="{{ . }}" alt="{{ $title }}" class="post-thumb" loading="lazy" decoding="async">{{ end }}
+  <h2><a href="{{ .Permalink }}">{{ .Title }}</a></h2>
+  <div class="meta">{{ .Date.Format "2006-01-02 15:04" }} · {{ .Params.source_name }} · {{ .Params.lang }}</div>
+  <p>{{ .Summary }}</p>
+</article>
+{{ end }}
+{{ partial "ad-banner.html" . }}
+{{ if gt $pages.TotalPages 1 }}
+<nav class="pagination">
+  {{ if $pages.HasPrev }}
+    <a href="{{ $pages.Prev.URL }}">&laquo; Prev</a>
+  {{ end }}
+
+  {{ $current := $pages.PageNumber }}
+  {{ $total := $pages.TotalPages }}
+  {{ $start := sub $current 4 }}
+  {{ $end := add $current 3 }}
+  {{ if le $start 1 }}
+    {{ $start = 1 }}
+    {{ $end = 8 }}
+    {{ if gt $end $total }}
+      {{ $end = $total }}
+    {{ end }}
+  {{ end }}
+  {{ if gt $end $total }}
+    {{ $end = $total }}
+    {{ $start = sub $total 7 }}
+    {{ if le $start 1 }}
+      {{ $start = 1 }}
+    {{ end }}
+  {{ end }}
+
+  {{ if gt $start 1 }}
+    <a href="/">1</a>
+    {{ if gt $start 2 }}<span class="ellipsis">...</span>{{ end }}
+  {{ end }}
+
+  {{ range $i := seq $start $end }}
+    {{ if eq $i $current }}
+      <span class="current">{{ $i }}</span>
+    {{ else }}
+      {{ $url := "" }}
+      {{ if eq $i 1 }}
+        {{ if eq $.Language.Lang "en" }}
+          {{ $url = "/" }}
+        {{ else }}
+          {{ $url = printf "/%s/" $.Language.Lang }}
+        {{ end }}
+      {{ else }}
+        {{ if eq $.Language.Lang "en" }}
+          {{ $url = printf "/page/%d/" $i }}
+        {{ else }}
+          {{ $url = printf "/%s/page/%d/" $.Language.Lang $i }}
+        {{ end }}
+      {{ end }}
+      <a href="{{ $url }}">{{ $i }}</a>
+    {{ end }}
+  {{ end }}
+
+  {{ if lt $end $total }}
+    {{ if lt $end (sub $total 1) }}<span class="ellipsis">...</span>{{ end }}
+    {{ if eq $.Language.Lang "en" }}
+      <a href="/page/{{ $total }}/">{{ $total }}</a>
+    {{ else }}
+      <a href="/{{ $.Language.Lang }}/page/{{ $total }}/">{{ $total }}</a>
+    {{ end }}
+  {{ end }}
+
+  {{ if $pages.HasNext }}
+    <a href="{{ $pages.Next.URL }}">Next &raquo;</a>
+  {{ end }}
+</nav>
+{{ end }}
+{{ end }}

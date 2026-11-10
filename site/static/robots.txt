@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /goaccess.html
+Disallow: /game/
+
+Sitemap: https://www.little7.net/sitemap.xml
+

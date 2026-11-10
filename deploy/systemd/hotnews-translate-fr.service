@@ -1,0 +1,14 @@
+[Unit]
+Description=HotNews Daily translation worker (French)
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/hotnews
+ExecStart=/home/ubuntu/hotnews/venv/bin/python /home/ubuntu/hotnews/collector/translate_worker_fr.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
