@@ -15,10 +15,10 @@
   <link rel="alternate" hreflang="x-default" href="{{ .Site.BaseURL }}">
   {{ with .OutputFormats.Get "rss" }}<link rel="alternate" type="application/rss+xml" href="{{ .Permalink }}" title="{{ $.Site.Title }}">{{ end }}
   <link rel="stylesheet" href="/css/style.css?v=6">
-  <link rel="icon" href="/images/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
-  <link rel="icon" type="image/png" sizes="64x64" href="/images/favicon-64.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" href="/images/favicon.ico?v=7" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png?v=7">
+  <link rel="icon" type="image/png" sizes="64x64" href="/images/favicon-64.png?v=7">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=7">
   {{/* SEO: Open Graph */}}
   {{ $og_type := "website" }}{{ if .IsPage }}{{ $og_type = "article" }}{{ end }}
   {{ $og_locales := dict "en" "en_US" "zh-tw" "zh_TW" "ja" "ja_JP" "fr" "fr_FR" "ar" "ar_SA" }}
@@ -40,7 +40,7 @@
   {{ with .Params.image_url }}<meta name="twitter:image" content="{{ . }}">{{ end }}
   {{/* SEO: JSON-LD NewsArticle */}}
   {{ if and .IsPage (eq .Section "posts") }}
-  {{ $schema := dict "@context" "https://schema.org" "@type" "NewsArticle" "headline" .Title "description" $desc "datePublished" (.Date.Format "2006-01-02T15:04:05Z07:00") "dateModified" (.Lastmod.Format "2006-01-02T15:04:05Z07:00") "mainEntityOfPage" (dict "@type" "WebPage" "@id" .Permalink) "url" .Permalink "author" (dict "@type" "Organization" "name" .Site.Title) "publisher" (dict "@type" "Organization" "name" .Site.Title "logo" (dict "@type" "ImageObject" "url" (printf "%simages/logo.png" .Site.BaseURL))) "inLanguage" .Language.Lang }}
+  {{ $schema := dict "@context" "https://schema.org" "@type" "NewsArticle" "headline" .Title "description" $desc "datePublished" (.Date.Format "2006-01-02T15:04:05Z07:00") "dateModified" (.Lastmod.Format "2006-01-02T15:04:05Z07:00") "mainEntityOfPage" (dict "@type" "WebPage" "@id" .Permalink) "url" .Permalink "author" (dict "@type" "Organization" "name" .Site.Title) "publisher" (dict "@type" "Organization" "name" .Site.Title "logo" (dict "@type" "ImageObject" "url" (printf "%simages/logo.png?v=7" .Site.BaseURL))) "inLanguage" .Language.Lang }}
   {{ with .Params.image_url }}{{ $schema = merge $schema (dict "image" (slice .)) }}{{ end }}
   <script type="application/ld+json">{{ $schema | jsonify | safeJS }}</script>
   {{ end }}
@@ -58,7 +58,7 @@
 </head>
 <body>
   <header>
-    <a class="site-title" href="{{ if eq .Language.Lang "en" }}/{{ else }}/{{ .Language.Lang | lower }}/{{ end }}"><img src="/images/logo-light.png" alt="{{ .Site.Title }}" class="site-logo" width="190" height="40"></a>
+    <a class="site-title" href="{{ if eq .Language.Lang "en" }}/{{ else }}/{{ .Language.Lang | lower }}/{{ end }}"><img src="/images/logo-light.png?v=7" alt="{{ .Site.Title }}" class="site-logo" width="190" height="40"></a>
     <nav>
       <a href="{{ if eq .Language.Lang "en" }}/{{ else }}/{{ .Language.Lang | lower }}/{{ end }}">{{ if eq .Language.Lang "en" }}Home{{ else if eq .Language.Lang "zh-tw" }}首頁{{ else if eq .Language.Lang "ja" }}ホーム{{ else if eq .Language.Lang "fr" }}Accueil{{ else if eq .Language.Lang "ar" }}الرئيسية{{ end }}</a>
       <a href="{{ if eq .Language.Lang "en" }}/about/{{ else }}/{{ .Language.Lang | lower }}/about/{{ end }}">{{ if eq .Language.Lang "en" }}About{{ else if eq .Language.Lang "zh-tw" }}關於{{ else if eq .Language.Lang "ja" }}概要{{ else if eq .Language.Lang "fr" }}À propos{{ else if eq .Language.Lang "ar" }}关于{{ end }}</a>
