@@ -13,26 +13,41 @@ defaultContentLanguage = 'en'
     title = 'HotNews Daily'
     locale = 'en-us'
     weight = 1
+    [languages.en.params]
+      description = 'Global news and hot topics, curated daily.'
+      footer = 'Global news and hot topics, curated daily.'
   [languages.zh-TW]
     title = 'HotNews Daily 繁體中文'
     locale = 'zh-TW'
     weight = 2
+    [languages.zh-TW.params]
+      description = '全球新聞與熱門話題，每日更新。'
+      footer = '全球新聞與熱門話題，每日更新。'
   [languages.ja]
     title = 'HotNews Daily 日本語'
     locale = 'ja-JP'
     weight = 3
+    [languages.ja.params]
+      description = '世界のニュースと話題を、毎日更新。'
+      footer = '世界のニュースと話題を、毎日更新。'
   [languages.fr]
     title = 'HotNews Daily Français'
     locale = 'fr-FR'
     weight = 4
+    [languages.fr.params]
+      description = "L'actualité mondiale et les sujets brûlants, chaque jour."
+      footer = "L'actualité mondiale et les sujets brûlants, chaque jour."
   [languages.ar]
     title = 'HotNews Daily العربية'
     locale = 'ar-SA'
     weight = 5
+    [languages.ar.params]
+      description = 'أخبار العالم والمواضيع الرائجة، يوميًا.'
+      footer = 'أخبار العالم والمواضيع الرائجة، يوميًا.'
 
 [params]
-  description = 'Aggregated world news, rewritten in plain English.'
-  footer = 'HotNews Daily - aggregated summaries with links to original sources.'
+  description = 'Global news and hot topics, curated daily.'
+  footer = 'Global news and hot topics, curated daily.'
 
 [outputs]
   home = ['HTML', 'RSS']
