@@ -62,9 +62,11 @@ def main():
               f"source_name: {yaml_str(src_name)}\n"
               + (f"image_url: {yaml_str(image_url)}\n" if image_url else "")
               + "draft: false\n---\n\n")
-        post = (fm + text + "\n\n---\n\n"
-                "*Aggregated summary. Original: "
-                f"[{src_name or 'source'}]({src_url})*\n")
+        # Attribution already appears in the body ("Sources: X"), in the meta
+        # line, and in front matter source_url/source_name; the site footer
+        # discloses the aggregation model. Do not append the redundant
+        # "Aggregated summary" block — it read as a non-originality signal.
+        post = fm + text + "\n"
         with open(path, "w") as f:
             f.write(post)
         conn.execute("UPDATE articles SET status=2, updated_at=? WHERE id=?",
