@@ -27,10 +27,8 @@ SLEEP = int(os.environ.get("TRANSLATE_FR_SLEEP", "0"))
 IDLE = int(os.environ.get("TRANSLATE_FR_IDLE", "300"))
 LANG_SLEEP = int(os.environ.get("TRANSLATE_FR_LANG_SLEEP", "10"))
 
-# Model list. TRANSLATE_FR_MODELS pins this worker to specific models (useful
-# when one model's free-tier quota is spent but another still has room);
-# falls back to the shared LLM_MODELS list.
-_LLM_MODELS_ENV = os.environ.get("TRANSLATE_FR_MODELS") or os.environ.get("LLM_MODELS")
+# Shared model list; each task picks its own API keys
+_LLM_MODELS_ENV = os.environ.get("LLM_MODELS")
 if _LLM_MODELS_ENV:
     _MODELS = [m.strip() for m in _LLM_MODELS_ENV.split(",") if m.strip()]
 else:
