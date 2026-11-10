@@ -52,6 +52,38 @@ _KEYS = [os.environ.get("TRANSLATE_API_KEYS") or os.environ.get("TRANSLATE_API_K
 BASE_URL = (os.environ.get("TRANSLATE_BASE_URL") or
             os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1")).rstrip("/")
 
+
+class QuotaExceeded(Exception):
+    """HTTP 429 RESOURCE_EXHAUSTED: free-tier daily quota is spent.
+    Carries the server-provided retry delay so the caller sleeps it off
+    instead of burning requests on doomed retries."""
+
+    def __init__(self, delay, msg="quota exceeded"):
+        self.delay = max(float(delay), 60.0)
+        super().__init__(f"{msg} (retry in {self.delay:.0f}s)")
+
+
+class BatchParseError(Exception):
+    """LLM output was not the expected JSON — usually a truncated batch."""
+
+
+def quota_delay(resp):
+    """Best-effort retry delay (seconds) from a 429 response body."""
+    try:
+        err = resp.json().get("error", {})
+    except Exception:
+        return 3600.0
+    for det in err.get("details", []) or []:
+        if str(det.get("@type", "")).endswith("RetryInfo"):
+            m = re.match(r"([\d.]+)s", str(det.get("retryDelay", "")))
+            if m:
+                return float(m.group(1))
+    m = re.search(r"retry in (\d+)h(\d+)m([\d.]+)s", str(err.get("message", "")))
+    if m:
+        return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3))
+    return 3600.0
+
+
 def _pick_model():
     """Randomly select a model/key pair for each request."""
     idx = random.randint(0, len(_MODELS) - 1)
@@ -107,11 +139,13 @@ def translate_single(client, text, src, lang, tries=3):
                                 json={
                                     "contents": [{"parts": [{"text": content}]}],
                                     "generationConfig": {
-                                        "maxOutputTokens": 16384,
+                                        "maxOutputTokens": 32768,
                                         "temperature": 0.3
                                     }
                                 },
                                 timeout=120)
+                if r.status_code == 429:
+                    raise QuotaExceeded(quota_delay(r))
                 r.raise_for_status()
                 data = r.json()
                 candidates = data.get("candidates") or []
@@ -140,6 +174,8 @@ def translate_single(client, text, src, lang, tries=3):
             if not title or not body:
                 raise ValueError("empty LLM output (reasoning-only response?)")
             return title, body
+        except QuotaExceeded:
+            raise
         except Exception as e:
             if attempt == tries - 1:
                 raise
@@ -205,11 +241,13 @@ def translate_multi(client, articles, languages, tries=3):
                                 json={
                                     "contents": [{"parts": [{"text": prompt}]}],
                                     "generationConfig": {
-                                        "maxOutputTokens": 16384,
+                                        "maxOutputTokens": 32768,
                                         "temperature": 0.3
                                     }
                                 },
                                 timeout=300)
+                if r.status_code == 429:
+                    raise QuotaExceeded(quota_delay(r))
                 r.raise_for_status()
                 data = r.json()
                 candidates = data.get("candidates") or []
@@ -236,9 +274,9 @@ def translate_multi(client, articles, languages, tries=3):
             except Exception:
                 parsed = None
             if parsed is None:
-                raise ValueError("empty LLM output")
+                raise BatchParseError("unparseable LLM output (likely truncated)")
             if not isinstance(parsed, list):
-                raise ValueError("Expected JSON array")
+                raise BatchParseError("expected JSON array")
             result = {}
             for item in parsed:
                 if not isinstance(item, dict):
@@ -251,11 +289,39 @@ def translate_multi(client, articles, languages, tries=3):
                     rec[lang] = (item.get(lang, {}).get("title", ""), item.get(lang, {}).get("body", ""))
                 result[aid] = rec
             return result
+        except QuotaExceeded:
+            raise
         except Exception as e:
             if attempt == tries - 1:
                 raise
             time.sleep(30 * (2 ** attempt))
     raise RuntimeError("unreachable")
+
+def translate_batch(client, batch, languages):
+    """Translate one batch. A batch too large for maxOutputTokens comes back as
+    unparseable JSON; halve it and retry so one long article cannot stall the
+    whole queue."""
+    try:
+        return translate_multi(client, batch, languages=languages)
+    except QuotaExceeded:
+        raise
+    except BatchParseError as e:
+        if len(batch) <= 1:
+            raise
+        log(f"batch of {len(batch)} unparseable ({e}); retrying as two halves")
+        mid = len(batch) // 2
+        merged = {}
+        for half in (batch[:mid], batch[mid:]):
+            if not half:
+                continue
+            try:
+                merged.update(translate_batch(client, half, languages))
+            except QuotaExceeded:
+                raise
+            except Exception as e2:
+                log(f"half-batch failed: {e2}")
+        return merged
+
 
 def main():
     c = get_conn()
@@ -299,8 +365,12 @@ def main():
 
         # Try to translate a batch of up to BATCH articles into all languages at once
         try:
-            result = translate_multi(client, todo, languages=list(LANGS.keys()))
+            result = translate_batch(client, todo, list(LANGS.keys()))
             backoff = SLEEP  # 成功，重置退避
+        except QuotaExceeded as e:
+            log(f"{e}; sleeping until quota reset")
+            time.sleep(min(e.delay + 60, 86400))
+            continue
         except Exception as e:
             log(f"batch translate FAIL: {e}")
             backoff = min(backoff * 2, MAX_BACKOFF)
