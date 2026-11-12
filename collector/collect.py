@@ -45,6 +45,43 @@ def utcnow():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+RFC_FORMATS = (
+    "%a, %d %b %Y %H:%M:%S %Z",
+    "%a, %d %b %Y %H:%M:%S %z",
+    "%A, %d-%b-%y %H:%M:%S %Z",
+)
+
+
+def norm_published(entry):
+    """Normalise an RSS date to ISO 8601 UTC.
+
+    Feeds hand us RFC 2822 ("Sun, 01 Nov 2026 00:06:01 GMT") or ISO strings.
+    SQLite compares TEXT lexicographically, so mixing the two makes
+    "ORDER BY published_at DESC" alphabetical rather than chronological and
+    quietly starves the newest articles.
+    """
+    tm = entry.get("published_parsed") or entry.get("updated_parsed")
+    if tm:
+        try:
+            return time.strftime("%Y-%m-%dT%H:%M:%SZ", tm)
+        except Exception:
+            pass
+    raw = entry.get("published") or entry.get("updated") or ""
+    for fmt in RFC_FORMATS:
+        try:
+            dt = datetime.strptime(raw, fmt)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        except Exception:
+            continue
+    try:
+        dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    except Exception:
+        return raw or utcnow()
+
+
 def get_conn():
     conn = sqlite3.connect(DB)
     conn.execute("PRAGMA journal_mode=WAL")
@@ -142,7 +179,7 @@ def fetch_rss(client, cfg):
             "summary": summary,
             "url": url,
             "source_name": src or cfg.get("name", ""),
-            "published": entry.get("published") or entry.get("updated") or utcnow(),
+            "published": norm_published(entry),
             "image_url": extract_image(entry),
         })
     return items

@@ -19,8 +19,11 @@ hotnews.db-shm
 
 # ---- Generated site content ------------------------------------------------
 # 26k+ markdown files are produced from the DB by the pipeline; the database
-# is the source of truth, so content is not versioned here.
-site/content/
+# is the source of truth, so article content is not versioned here.
+# The hand-written pages at the content root (about/privacy/contact) ARE
+# versioned: they are site structure, not pipeline output.
+site/content/*
+!site/content/*.md
 site/.hugo_build.lock
 
 # ---- Build output ----------------------------------------------------------

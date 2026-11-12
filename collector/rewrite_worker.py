@@ -50,75 +50,100 @@ def batch_llm_rewrite(client, articles):
     articles: list of dict with keys id, title, summary, src, url
     returns: dict {id: (title_lang, body)}
     """
-    idx = random.randint(0, len(_MODELS) - 1)
-    model = _MODELS[idx]
-    key = _KEYS[idx % len(_KEYS)]
-    base = os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1").rstrip("/")
+    last_err = None
+    # Try each model in turn: Gemini free tiers return 503 "high demand" for
+    # individual models, so a random pick fails ~half the time. Rotating
+    # through the list keeps a transient 503 from failing the whole batch
+    # (which would burn a retry and eventually skip the articles).
+    order = list(range(len(_MODELS)))
+    random.shuffle(order)
+    for idx in order:
+        model = _MODELS[idx]
+        key = _KEYS[idx % len(_KEYS)]
+        base = os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1").rstrip("/")
 
-    lang = os.environ.get("TARGET_LANG", "en")
-    lines = []
-    lines.append(f"你是新闻改写编辑。请把下面的文章改写成{lang}。")
-    lines.append(f"重要：无论原标题或摘要是什么语言，改写后的标题(title_lang)和正文(body)必须全部使用{lang}。")
-    lines.append("要求：")
-    lines.append("- 基于标题和摘要，独立成文，不要逐句复制原文")
-    lines.append("- 写 600-1000 字的完整文章，不要压缩成摘要")
-    lines.append("- 使用多段落，段落之间用空行分隔")
-    lines.append("- 保持事实准确，语气中立")
-    lines.append("- 每个文章末尾加上：Sources: <source name in English>")
-    lines.append("- 只输出 JSON 数组，元素格式: {article_id: <int>, title_lang: <英文标题>, body: <英文正文>}，不要其他文字。")
-    lines.append("- body 中不要包含未转义的双引号，如需引用请用单引号")
-    lines.append("- 如果原标题不是英文，请翻译成英文作为 title_lang")
-    lines.append("")
-
-    for art in articles:
-        lines.append(f"### 文章 {art['id']} ###")
-        lines.append(f"标题: {art['title']}")
-        lines.append(f"摘要: {art['summary']}")
-        if art.get('url'):
-            lines.append(f"来源: {art['src']}")
+        lang = os.environ.get("TARGET_LANG", "en")
+        lines = []
+        lines.append(f"你是新闻改写编辑。请把下面的文章改写成{lang}。")
+        lines.append(f"重要：无论原标题或摘要是什么语言，改写后的标题(title_lang)和正文(body)必须全部使用{lang}。")
+        lines.append("要求：")
+        lines.append("- 基于标题和摘要，独立成文，不要逐句复制原文")
+        lines.append("- 写 600-1000 字的完整文章，不要压缩成摘要")
+        lines.append("- 使用多段落，段落之间用空行分隔")
+        lines.append("- 保持事实准确，语气中立")
+        lines.append("- 每个文章末尾加上：Sources: <source name in English>")
+        lines.append("- 只输出 JSON 数组，元素格式: {article_id: <int>, title_lang: <英文标题>, body: <英文正文>}，不要其他文字。")
+        lines.append("- body 中不要包含未转义的双引号，如需引用请用单引号")
+        lines.append("- 如果原标题不是英文，请翻译成英文作为 title_lang")
         lines.append("")
 
-    prompt = "\n".join(lines)
+        for art in articles:
+            lines.append(f"### 文章 {art['id']} ###")
+            lines.append(f"标题: {art['title']}")
+            lines.append(f"摘要: {art['summary']}")
+            if art.get('url'):
+                lines.append(f"来源: {art['src']}")
+            lines.append("")
 
-    headers = {}
-    if "generativelanguage.googleapis.com" in base:
-        url = f"{base}/models/{model}:generateContent"
-        payload = {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "maxOutputTokens": 16384,
-                "temperature": 0.4
+        prompt = "\n".join(lines)
+
+        headers = {}
+        if "generativelanguage.googleapis.com" in base:
+            url = f"{base}/models/{model}:generateContent"
+            payload = {
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {
+                    "maxOutputTokens": 16384,
+                    "temperature": 0.4
+                }
             }
-        }
-        params = {"key": key}
-    else:
-        url = f"{base}/chat/completions"
-        payload = {"model": model, "messages": [{"role": "user", "content": prompt}]}
-        headers = {"Authorization": f"Bearer {key}"}
-        params = None
+            params = {"key": key}
+        else:
+            url = f"{base}/chat/completions"
+            payload = {"model": model, "messages": [{"role": "user", "content": prompt}]}
+            headers = {"Authorization": f"Bearer {key}"}
+            params = None
 
-    r = client.post(url, params=params, json=payload, headers=headers, timeout=300)
-    r.raise_for_status()
-    data = r.json()
-    if "generativelanguage.googleapis.com" in base:
-        candidates = data.get("candidates") or []
-        if not candidates:
-            raise ValueError("empty LLM output (no candidates)")
-        parts_list = candidates[0].get("content", {}).get("parts", [])
-        if not parts_list:
-            raise ValueError("empty LLM output (no parts)")
-        text = parts_list[0].get("text", "").strip()
-        if not text:
-            raise ValueError("empty LLM output (blank text)")
-    else:
-        choices = data.get("choices") or []
-        if not choices:
-            raise ValueError("empty LLM output (no choices)")
-        text = choices[0].get("message", {}).get("content", "").strip()
-        if not text:
-            raise ValueError("empty LLM output (blank content)")
+        try:
+            r = client.post(url, params=params, json=payload, headers=headers, timeout=300)
+            if r.status_code == 503:
+                last_err = f"{model}: 503 high demand"
+                continue
+            r.raise_for_status()
+            data = r.json()
+            if "generativelanguage.googleapis.com" in base:
+                candidates = data.get("candidates") or []
+                if not candidates:
+                    last_err = f"{model}: empty LLM output (no candidates)"
+                    continue
+                parts_list = candidates[0].get("content", {}).get("parts", [])
+                if not parts_list:
+                    last_err = f"{model}: empty LLM output (no parts)"
+                    continue
+                text = parts_list[0].get("text", "").strip()
+                if not text:
+                    last_err = f"{model}: empty LLM output (blank text)"
+                    continue
+            else:
+                choices = data.get("choices") or []
+                if not choices:
+                    last_err = f"{model}: empty LLM output (no choices)"
+                    continue
+                text = choices[0].get("message", {}).get("content", "").strip()
+                if not text:
+                    last_err = f"{model}: empty LLM output (blank content)"
+                    continue
+            result = parse_batch_output(text, len(articles))
+            # A blank body means the model gave up mid-batch; try another model.
+            if any(not b.strip() for _, b in result.values()):
+                last_err = f"{model}: blank body in batch output"
+                continue
+            return result
+        except Exception as e:
+            last_err = f"{model}: {type(e).__name__}: {e}"
+            continue
 
-    return parse_batch_output(text, len(articles))
+    raise RuntimeError(f"all models failed: {last_err}")
 
 
 def parse_batch_output(text, expected_count):
@@ -177,7 +202,7 @@ def main():
         rows = c.execute(
             "SELECT id, title, summary, source_name, source_url FROM articles "
             "WHERE status=0 AND summary IS NOT NULL AND length(summary) > 40 "
-            "ORDER BY published_at DESC LIMIT 500"
+            "ORDER BY published_at DESC LIMIT 1000"
         ).fetchall()
         if not rows:
             failed_tracker = {}

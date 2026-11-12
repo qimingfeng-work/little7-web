@@ -7,14 +7,11 @@
 {{ end }}
 {{ define "main" }}
 {{ $all_pages := site.RegularPages.ByDate.Reverse }}
-{{ $filtered := slice }}
-{{ range $all_pages }}
-  {{ $skip := false }}
-  {{ $rel := .RelPermalink }}
-  {{ $title := .Title }}
-  {{ $skip := or (in $rel "/about/") (in $rel "/contact/") (in $rel "/privacy/") (eq $title "About") (eq $title "Contact") (eq $title "Privacy") }}
-  {{ if not $skip }}{{ $filtered = $filtered | append . }}{{ end }}
-{{ end }}
+{{/* Section filter instead of a range+append loop: append copies the slice on
+     every iteration, making each list render O(n^2) over ~12k pages. The
+     static pages (about/contact/privacy) live outside posts/, so a single
+     where pass yields the same set. */}}
+{{ $filtered := where $all_pages "Section" "posts" }}
 {{ $pages := .Paginate $filtered }}
 {{ partial "ad-banner.html" . }}
 {{ range $pages.Pages }}
