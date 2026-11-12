@@ -16,6 +16,7 @@ import time
 import subprocess
 import json
 import random
+import signal
 import httpx
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -248,13 +249,27 @@ def main():
             except Exception as e:
                 log(f"publish FAIL: {e}")
             try:
-                r = subprocess.run(
+                # start_new_session: build.sh gets its own process group so a
+                # timeout can kill the whole tree (flock -> bash -> hugo ->
+                # rsync). Otherwise only flock dies and hugo keeps running as
+                # an orphan, holding CPU and the staging directory.
+                p = subprocess.Popen(
                     [os.path.join(BASE, "collector", "build.sh")],
-                    capture_output=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
                     text=True,
-                    timeout=2400,
+                    start_new_session=True,
                 )
-                log(f"build rc={r.returncode}")
+                try:
+                    out, _ = p.communicate(timeout=3600)
+                except subprocess.TimeoutExpired:
+                    try:
+                        os.killpg(os.getpgid(p.pid), signal.SIGKILL)
+                    except Exception:
+                        pass
+                    out, _ = p.communicate()
+                    p.returncode = -9
+                log(f"build rc={p.returncode} {(out or '').strip()[-120:]}")
             except Exception as e:
                 log(f"build FAIL: {e}")
             # 无论成功或超时都重置节流，避免构建风暴
