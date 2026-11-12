@@ -20,7 +20,16 @@
   {{ $rel := .RelPermalink }}
   {{ $is_static := or (in $rel "/about/") (in $rel "/contact/") (in $rel "/privacy/") }}
   {{ if not $is_static }}
-  {{ $related := where site.RegularPages.ByDate.Reverse "RelPermalink" "ne" .RelPermalink | first 8 }}
+  {{ $related := slice }}
+  {{/* Bounded walk instead of `where ... | first 8`: the latter scans every
+       regular page for every page rendered (O(n^2) over ~35k pages). The
+       list is already newest-first, so stop after 8 non-self matches. */}}
+  {{ range site.RegularPages.ByDate.Reverse }}
+    {{ if ne .RelPermalink $.RelPermalink }}
+      {{ $related = $related | append . }}
+    {{ end }}
+    {{ if eq (len $related) 8 }}{{ break }}{{ end }}
+  {{ end }}
   {{ if $related }}
   <section class="related">
     <h2>{{ if eq .Language.Lang "zh-tw" }}相關新聞{{ else if eq .Language.Lang "fr" }}Articles similaires{{ else if eq .Language.Lang "ja" }}関連記事{{ else if eq .Language.Lang "ar" }}أخبار ذات صلة{{ else }}Related News{{ end }}</h2>
