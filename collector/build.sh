@@ -7,7 +7,7 @@ SRC_DIR="$(cd "$(dirname "$(dirname "$0")")" && pwd)/site"
 STAGE_DIR="$(dirname "$SRC_DIR")/build-output"
 LIVE_DIR=/var/www/hotnews
 
-exec flock -w 1200 /tmp/hotnews-build.lock bash -c "
+exec flock -w 2400 /tmp/hotnews-build.lock bash -c "
   set -e
   rm -rf '$STAGE_DIR'
   mkdir -p '$STAGE_DIR'
