@@ -12,10 +12,10 @@
     {{ with .Params.source_name }} · source: {{ . }}{{ end }}
     {{ with .Params.lang }} · lang: {{ . }}{{ end }}
   </div>
-  {{ partial "ad-banner.html" . }}
+  {{ partial "ad-banner.html" (dict "key" "f2dd6fce4c1205565b32e99902b22011" "width" 320 "height" 50 "class" "ad-banner-top") }}
   {{ with .Params.image_url }}<img src="{{ . }}" alt="{{ $.Title }}" class="post-image" loading="lazy" decoding="async">{{ end }}
   {{ .Content }}
-  {{ partial "ad-banner.html" . }}
+  {{ partial "ad-banner.html" (dict "key" "57ec7a2cbed925da99f282002ed8e824" "width" 468 "height" 60 "class" "ad-banner-bottom") }}
   {{/* Static pages (About / Privacy / Contact) must not show related news */}}
   {{ $rel := .RelPermalink }}
   {{ $is_static := or (in $rel "/about/") (in $rel "/contact/") (in $rel "/privacy/") }}
