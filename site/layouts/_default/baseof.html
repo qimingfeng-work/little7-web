@@ -51,6 +51,8 @@
   <script type="application/ld+json">{{ $bread | jsonify | safeJS }}</script>
   {{ end }}
   {{ block "head" . }}{{ end }}
+  {{/* Google AdSense loader */}}
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2160410215647576" crossorigin="anonymous"></script>
   {{ if and (eq .Kind "page") (eq .Section "posts") }}
   <!-- Adsterra Popunder (news article pages only) -->
   <script data-cfasync="false" src="https://abscloud.org/1/7661a32262102aa8b50a8c26c60ccd74"></script>
