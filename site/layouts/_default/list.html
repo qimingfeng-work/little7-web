@@ -13,7 +13,6 @@
      where pass yields the same set. */}}
 {{ $filtered := where $all_pages "Section" "posts" }}
 {{ $pages := .Paginate $filtered }}
-{{ partial "ad-banner.html" (dict "key" "f2dd6fce4c1205565b32e99902b22011" "width" 320 "height" 50 "class" "ad-banner-top") }}
 {{ range $pages.Pages }}
 <article class="post">
   {{ $title := .Title }}

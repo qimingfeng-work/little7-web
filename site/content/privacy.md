@@ -8,7 +8,7 @@ sources. It does not require accounts and does not collect personal
 information.
 
 Third-party advertising is active on this site. Our ad provider
-(Adsterra) may set cookies or similar identifiers on your device and
+(PropellerAds) may set cookies or similar identifiers on your device and
 may collect limited technical data (such as browser type, approximate
 region, and an anonymous identifier) to serve and measure advertising.
 The provider's own privacy policy governs that data; this site does
