@@ -13,7 +13,7 @@
 
 SVC=hotnews-rewrite
 LOG=/home/ubuntu/hotnews/logs/rewrite_worker.log
-MAX_AGE=$((90 * 60))   # 90 min > worst-case build (~40 min)
+MAX_AGE=$((150 * 60))  # 150 min > worst-case build (5400s = 90 min)
 
 [ -f "$LOG" ] || exit 0
 

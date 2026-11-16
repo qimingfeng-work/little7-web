@@ -286,7 +286,7 @@ def main():
                     start_new_session=True,
                 )
                 try:
-                    out, _ = p.communicate(timeout=3600)
+                    out, _ = p.communicate(timeout=5400)
                 except subprocess.TimeoutExpired:
                     try:
                         os.killpg(os.getpgid(p.pid), signal.SIGKILL)
