@@ -90,7 +90,7 @@ def _pick_model():
     return _MODELS[idx], _KEYS[idx % len(_KEYS)]
 
 LANGS = {
-    'zh-TW': '你是新聞翻譯編輯。把下面的英文文章翻譯改寫為地道繁體中文（台灣用語，500-1000字）：保持全部事實準確，語氣中立可讀，不逐句照抄，結尾加一行「來源: {src}」。輸出格式：第一行 TITLE: <繁體中文標題>；之後是正文。不要其他內容。',
+    'zh-TW': '你是新聞翻譯編輯。把下面的英文文章翻譯改寫為地道繁體中文（台灣用語，500-1000字）：保持全部事實準確，語氣中立可讀，不逐句照抄。輸出格式：第一行 TITLE: <繁體中文標題>；之後是正文。不要其他內容。',
 }
 
 def segment(text):
@@ -102,10 +102,9 @@ def segment(text):
     parts = [p.strip() for p in parts if p.strip()]
     if not parts:
         return text
-    src_line = None
     for i, p in enumerate(parts):
         if re.match(r"^(来源|來源|出典|Sources|Source|المصدر)[:：]", p):
-            src_line = parts.pop(i)
+            parts.pop(i)
             break
     paras, cur, sent = [], "", 0
     for p in parts:
@@ -117,8 +116,6 @@ def segment(text):
             sent += 1
     if cur:
         paras.append(cur)
-    if src_line:
-        paras.append(src_line)
     return "\n\n".join(paras)
 
 def log(msg):
@@ -216,11 +213,11 @@ def translate_multi(client, articles, languages, tries=3):
     )
     parts.append(f'{{ article_id: <數字>, {example_obj} }}')
     if languages[0] == 'fr':
-        parts.append("Gardez tous les faits exacts, ton neutre et lisible, et terminez par une ligne \"Source: {src}\".")
+        parts.append("Gardez tous les faits exacts, ton neutre et lisible.")
     elif languages[0] == 'zh-TW':
-        parts.append("保持事實準確、語氣中立可讀，結尾加「來源: {src}」。")
+        parts.append("保持事實準確、語氣中立可讀。")
     else:
-        parts.append("保持事实准确、语气中立、可读，结尾加“来源: {src}”。")
+        parts.append("保持事实准确、语气中立、可读。")
     parts.append("不要輸出任何解釋性文字，只輸出 JSON 數組。")
 
     for aid, body, src_url, src_name, published, title in articles:

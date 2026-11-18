@@ -71,7 +71,6 @@ def batch_llm_rewrite(client, articles):
         lines.append("- 写 600-1000 字的完整文章，不要压缩成摘要")
         lines.append("- 使用多段落，段落之间用空行分隔")
         lines.append("- 保持事实准确，语气中立")
-        lines.append("- 每个文章末尾加上：Sources: <source name in English>")
         lines.append("- 只输出 JSON 数组，元素格式: {article_id: <int>, title_lang: <英文标题>, body: <英文正文>}，不要其他文字。")
         lines.append("- body 中不要包含未转义的双引号，如需引用请用单引号")
         lines.append("- 如果原标题不是英文，请翻译成英文作为 title_lang")

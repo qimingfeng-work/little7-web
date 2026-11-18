@@ -77,7 +77,7 @@ def _pick_model():
     return _MODELS[idx], _KEYS[idx % len(_KEYS)]
 
 LANGS = {
-    'fr': 'Vous êtes un rédacteur de traduction de presse. Traduisez l\'article anglais suivant en français courant et naturel (500-1000 mots) : gardez tous les faits exacts, ton neutre et lisible, ne traduisez pas mot à mot, ajoutez à la fin une ligne "Source: {src}". Format de sortie : première ligne "TITLE: <titre français>" puis le corps du texte. Ne fournissez rien d\'autre.',
+    'fr': 'Vous êtes un rédacteur de traduction de presse. Traduisez l\'article anglais suivant en français courant et naturel (500-1000 mots) : gardez tous les faits exacts, ton neutre et lisible, ne traduisez pas mot à mot. Format de sortie : première ligne "TITLE: <titre français>" puis le corps du texte. Ne fournissez rien d\'autre.',
 }
 
 def segment(text):
@@ -89,10 +89,9 @@ def segment(text):
     parts = [p.strip() for p in parts if p.strip()]
     if not parts:
         return text
-    src_line = None
     for i, p in enumerate(parts):
-        if re.match(r"^(来源|出典|Sources|Source|المصدر)[:：]", p):
-            src_line = parts.pop(i)
+        if re.match(r"^(来源|來源|出典|Sources|Source|المصدر)[:：]", p):
+            parts.pop(i)
             break
     paras, cur, sent = [], "", 0
     for p in parts:
@@ -104,8 +103,6 @@ def segment(text):
             sent += 1
     if cur:
         paras.append(cur)
-    if src_line:
-        paras.append(src_line)
     return "\n\n".join(paras)
 
 def log(msg):
@@ -201,9 +198,9 @@ def translate_multi(client, articles, languages, tries=3):
     )
     parts.append(f'{{ article_id: <数字>, {example_obj} }}')
     if languages[0] == 'fr':
-        parts.append("Gardez tous les faits exacts, ton neutre et lisible, et terminez par une ligne \"Source: {src}\".")
+        parts.append("Gardez tous les faits exacts, ton neutre et lisible.")
     else:
-        parts.append("保持事实准确、语气中立、可读，结尾加“来源: {src}”。")
+        parts.append("保持事实准确、语气中立、可读。")
     parts.append("不要输出任何解释性文字，只输出 JSON 数组。")
 
     for aid, body, src_url, src_name, published, title in articles:
