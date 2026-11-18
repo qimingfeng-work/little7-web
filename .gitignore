@@ -28,3 +28,6 @@ site/.hugo_build.lock
 
 # ---- Build output ----------------------------------------------------------
 build-output/
+
+# 内容清理备份（体积大，不入库）
+content-backup-*.tar.gz
